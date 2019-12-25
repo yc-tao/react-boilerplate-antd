@@ -1,0 +1,35 @@
+import { take, call,apply,folk,delay, put, select,takeLatest } from 'redux-saga/effects';
+
+/********************** constants ***********************/
+import {
+  DEFAULT_ACTION,
+  COMPONENT_WILL_MOUNT,// before render
+  COMPONENT_DID_MOUNT,// after render
+} from './constants'
+
+/********************** actions ***********************/
+import{
+  componentDidMountAction,
+} from './actions'
+
+ /************************ selectors **********************/
+ import makeSelect{{ name }} from './selectors';
+
+ /************************ utils **********************/
+// const logger = require('../../utils/logger')
+
+
+// after render
+export function* componentDidMountSaga(){
+  try{
+    yield put(componentDidMountAction())
+  }catch(err){
+
+  }
+}
+
+// Individual exports for testing
+export default function* {{ camelCase name }}Saga() {
+  // after render
+  yield takeLatest(COMPONENT_DID_MOUNT, componentDidMountSaga)
+}

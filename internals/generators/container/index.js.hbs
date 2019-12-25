@@ -1,0 +1,136 @@
+/**
+ *
+ * {{properCase name }}
+ *
+ */
+
+/************************ library **********************/
+{{#if memo}}
+import React, { memo,useState, useEffect,useReducer } from 'react';
+{{else}}
+import React from 'react';
+{{/if}}
+import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
+{{#if wantHeaders}}
+import { Helmet } from 'react-helmet';
+{{/if}}
+{{#if wantMessages}}
+import { FormattedMessage } from 'react-intl';
+{{/if}}
+{{#if wantActionsAndReducer}}
+import { createStructuredSelector } from 'reselect';
+{{/if}}
+import { compose } from 'redux';
+
+/************************ utils **********************/
+{{#if wantSaga}}
+import { useInjectSaga } from 'utils/injectSaga';
+{{/if}}
+{{#if wantActionsAndReducer}}
+import { useInjectReducer } from 'utils/injectReducer';
+
+/************************ selectors **********************/
+import makeSelect{{properCase name}} from './selectors';
+
+/************************ reducer **********************/
+import reducer from './reducer';
+{{/if}}
+
+/************************ saga **********************/
+{{#if wantSaga}}
+import saga from './saga';
+{{/if}}
+
+/************************ messages **********************/
+{{#if wantMessages}}
+import messages from './messages';
+{{/if}}
+
+
+/************************ actions **********************/
+import {
+  componentWillMountAction,// before render
+  componentDidMountAction,// after render
+} from './actions';
+
+/************************ styles **********************/
+
+
+
+export function {{ properCase name }}( props ) {
+  {{#if wantActionsAndReducer}}
+  useInjectReducer({ key: '{{ camelCase name }}', reducer });
+  {{/if}}
+  {{#if wantSaga}}
+  useInjectSaga({ key: '{{ camelCase name }}', saga });
+  {{/if}}
+
+    const componentWillMount = ()=>{
+      props.componentWillMountAction()
+    }
+
+    const componentDidMount = ()=>{
+      props.componentDidMountAction()
+    }
+
+    useEffect(()  =>  {
+      // Async Action
+
+      const containerData = props.{{ camelCase name }}
+
+      if( containerData.render === 'none'){
+        componentWillMount()
+      }
+
+      if( containerData.render === 'before'){
+        componentDidMount()
+      }
+
+    })
+
+  return (
+    <div>
+    {{#if wantHeaders}}
+      <Helmet>
+        <title>{{properCase name}}</title>
+        <meta name="description" content="Description of {{properCase name}}" />
+      </Helmet>
+    {{/if}}
+    {{#if wantMessages}}
+      <FormattedMessage {...messages.header} />
+    {{/if}}
+    </div>
+  );
+}
+
+{{ properCase name }}.propTypes = {
+  dispatch: PropTypes.func.isRequired,
+};
+
+{{#if wantActionsAndReducer}}
+const mapStateToProps = createStructuredSelector({
+  {{ camelCase name }}: makeSelect{{properCase name}}(),
+});
+{{/if}}
+
+function mapDispatchToProps(dispatch) {
+  return {
+    dispatch,
+    componentWillMountAction: () => { dispatch(componentWillMountAction()) },
+    componentDidMountAction: () => { dispatch(componentDidMountAction()) },
+  };
+}
+
+{{#if wantActionsAndReducer}}
+const withConnect = connect(mapStateToProps, mapDispatchToProps);
+{{else}}
+const withConnect = connect(null, mapDispatchToProps);
+{{/if}}
+
+export default compose(
+  withConnect,
+{{#if memo}}
+  memo,
+{{/if}}
+)({{ properCase name }});

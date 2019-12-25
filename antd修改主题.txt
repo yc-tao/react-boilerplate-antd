@@ -1,0 +1,160 @@
+
+1、安装less、less-loader、antd-theme-webpack-plugin包
+
+
+2、在app文件夹下新加theme文件夹，新增variable.less和index.less
+
+variable.less：
+
+// 注意路径
+@import "../../../node_modules/antd/lib/style/themes/default.less";
+
+@primary-color: #1890ff; // 全局主色
+@link-color: #1890ff; // 链接色
+@success-color: #52c41a; // 成功色
+@warning-color: #faad14; // 警告色
+@error-color: #f5222d; // 错误色
+@font-size-base: 14px; // 主字号
+@heading-color: rgba(0, 0, 0, 0.85); // 标题色
+@text-color: rgba(0, 0, 0, 0.65); // 主文本色
+@text-color-secondary : rgba(0, 0, 0, .45); // 次文本色
+@disabled-color : rgba(0, 0, 0, .25); // 失效色
+@border-radius-base: 4px; // 组件/浮层圆角
+@border-color-base: #d9d9d9; // 边框色
+@box-shadow-base: 0 2px 8px rgba(0, 0, 0, 0.15); // 浮层阴影
+
+
+index.less：
+
+@import './variables.less';
+// 这里可以定义自己的样式
+.primary-bgColor{
+  background-color:@primary-color;
+}
+
+.primary-fontColor{
+  color:@primary-color;
+}
+
+.primary-border-left-color{
+  border-left-color: @primary-color;
+}
+
+
+
+
+3、配置internals下的webpack，
+
+webpack.base.babel.js  新加
+// antd theme config
+const AntDesignThemePlugin = require('antd-theme-webpack-plugin');
+
+
+output下的：
+
+ publicPath: '/dist',
+
+
+
+
+rules下：
+
+{
+        // Preprocess 3rd party .less files located in node_modules
+        test: /\.less$/,
+        include: /node_modules/,
+        use: [{
+          loader: "style-loader" // creates style nodes from JS strings
+        }, {
+          loader: "css-loader" // translates CSS into CommonJS
+        }, {
+          loader:'less-loader',
+          options:{
+            //这里需要在less的配置规则里打开javascriptEnabled
+            javascriptEnabled: true,
+          }
+        }]
+      },
+
+
+
+plugins下：
+
+// antd theme config
+    new AntDesignThemePlugin({
+      antDir: path.join(__dirname, '../../node_modules/antd'),//antd packages
+      stylesDir: path.join(__dirname, '../../app/static/theme'),// self theme file
+      varFile: path.join(__dirname, '../../app/static/theme/variables.less'),// self theme color
+      indexFileName: 'app/index.html',
+      mainLessFile: path.join(__dirname, '../../app/static/theme/index.less'),
+      //outputFilePath: path.join(__dirname, '/wt/irMob/color.less'),// output
+      themeVariables: [
+        // theme var
+        '@primary-color',
+        '@btn-primary-bg',
+        '@link-color',
+      ],
+      generateOnce:false,
+      lessUrl: "https://cdnjs.cloudflare.com/ajax/libs/less.js/2.7.2/less.min.js",
+      publicPath: ""
+
+    }),
+
+
+
+
+webpack.prod.babel.js  修改：
+
+OfflinePlugin下：
+
+ publicPath: '/dist',
+      appShell: '/dist',
+
+
+
+
+
+4、在index.html里：
+
+body标签里新加：
+
+
+<link rel="stylesheet/less" type="text/css" href="/dist/color.less" />
+  <script>
+    window.less = {
+      async: false,
+      env: 'production'//production  development
+    };
+  </script>
+<script src="https://cdn.bootcss.com/less.js/2.7.3/less.min.js"></script>
+
+
+
+5、在页面中使用
+
+// 改变主题
+function updateThemeColor (color) {
+
+  if(window.less &&window.less.modifyVars&&color ){
+    // 修改主题色
+    window.less.modifyVars(
+      {
+        '@primary-color': color,
+        '@btn-primary-bg': color,
+        '@link-color': color,
+      }
+    )
+      .then(() => {console.log('change theme success')})
+      .catch(error => {
+        console.log(error)
+      })
+  }
+}
+
+
+
+
+
+
+
+
